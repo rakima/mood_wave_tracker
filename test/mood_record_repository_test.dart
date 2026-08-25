@@ -38,6 +38,12 @@ void main() {
     expect(saved.tookMedication, isTrue);
   });
 
+  test('日本語メモを文字化けせず保存して読み出せる', () async {
+    await repository.save(makeRecord(memo: 'テスト'));
+    final saved = await repository.findByDate(DateTime(2026, 8, 24));
+    expect(saved!.memo, 'テスト');
+  });
+
   test('同日の保存は追加せず既存レコードを更新する', () async {
     await repository.save(makeRecord(mania: 1));
     await repository.save(makeRecord(mania: 5));
