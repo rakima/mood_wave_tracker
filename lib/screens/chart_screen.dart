@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import '../data/mood_record_store.dart';
 import '../domain/chart_point.dart';
 import '../domain/mood_record.dart';
+import '../l10n/app_strings.dart';
+import '../settings/app_settings.dart';
 
 class ChartScreen extends StatelessWidget {
-  const ChartScreen({required this.store, super.key});
+  const ChartScreen({required this.store, required this.language, super.key});
 
   final MoodRecordStore store;
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings(language);
     final today = MoodRecord.dateOnly(DateTime.now());
     final from = today.subtract(const Duration(days: 29));
     return FutureBuilder<List<MoodRecord>>(
@@ -22,22 +26,24 @@ class ChartScreen extends StatelessWidget {
         final points = snapshot.data!.map(toChartPoint).toList();
         return CustomScrollView(
           slivers: [
-            const SliverAppBar.large(title: Text('状態グラフ')),
+            SliverAppBar.large(title: Text(strings.t('状態グラフ', 'Mood chart'))),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               sliver: SliverList.list(children: [
-                Text('直近30日', style: Theme.of(context).textTheme.titleMedium),
+                Text(strings.t('直近30日', 'Last 30 days'),
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                const Text('0から上下に離れるほど、状態の振れが大きいことを表します。'),
+                Text(strings.t('0から上下に離れるほど、状態の振れが大きいことを表します。',
+                    'Distance from 0 shows the size of the mood swing.')),
                 const SizedBox(height: 16),
                 Row(children: [
                   _Legend(
-                      color: Theme.of(context).colorScheme.tertiary,
-                      label: '躁 ＋'),
+                      color: Colors.red.shade400,
+                      label: strings.t('躁 ＋', 'Mania +')),
                   const SizedBox(width: 20),
                   _Legend(
-                      color: Theme.of(context).colorScheme.primary,
-                      label: '鬱 －'),
+                      color: Colors.blue.shade400,
+                      label: strings.t('鬱 －', 'Depression −')),
                 ]),
                 const SizedBox(height: 12),
                 AspectRatio(
@@ -54,9 +60,8 @@ class ChartScreen extends StatelessWidget {
                         painter: MoodChartPainter(
                           points: points,
                           from: from,
-                          maniaColor: Theme.of(context).colorScheme.tertiary,
-                          depressionColor:
-                              Theme.of(context).colorScheme.primary,
+                          maniaColor: Colors.red.shade400,
+                          depressionColor: Colors.blue.shade400,
                           lineColor:
                               Theme.of(context).colorScheme.outlineVariant,
                           zeroColor: Theme.of(context).colorScheme.onSurface,
@@ -68,9 +73,11 @@ class ChartScreen extends StatelessWidget {
                   ),
                 ),
                 if (points.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Center(child: Text('期間内の記録はまだありません')),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Center(
+                        child: Text(strings.t(
+                            '期間内の記録はまだありません', 'No records in this period'))),
                   ),
               ]),
             ),
