@@ -6,6 +6,18 @@ import 'package:timezone/timezone.dart' as tz;
 import '../data/mood_record_store.dart';
 import '../settings/app_settings.dart';
 
+tz.Location resolveTimezoneLocation(String identifier) {
+  final normalized = identifier.trim();
+  if (normalized == 'GMT' || normalized == 'UTC' || normalized == 'Etc/UTC') {
+    return tz.UTC;
+  }
+  try {
+    return tz.getLocation(normalized);
+  } on Object {
+    return tz.UTC;
+  }
+}
+
 class ReminderService {
   ReminderService(this._store);
   final MoodRecordStore _store;
@@ -14,7 +26,7 @@ class ReminderService {
   Future<void> initialize() async {
     tz_data.initializeTimeZones();
     final zone = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(zone.identifier));
+    tz.setLocalLocation(resolveTimezoneLocation(zone.identifier));
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
