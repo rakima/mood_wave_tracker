@@ -38,6 +38,9 @@ class _RecordScreenState extends State<RecordScreen> {
 
   DateTime _dateFor(int page) =>
       _centerDate.add(Duration(days: page - centerPage));
+  int get _lastPage =>
+      centerPage +
+      MoodRecord.dateOnly(DateTime.now()).difference(_centerDate).inDays;
   @override
   void dispose() {
     _pages.dispose();
@@ -79,14 +82,17 @@ class _RecordScreenState extends State<RecordScreen> {
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall)),
                 IconButton(
-                    onPressed: () => _pages.nextPage(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOut),
+                    onPressed: _page >= _lastPage
+                        ? null
+                        : () => _pages.nextPage(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOut),
                     icon: const Icon(Icons.chevron_right)),
               ])),
           Expanded(
               child: PageView.builder(
                   controller: _pages,
+                  itemCount: _lastPage + 1,
                   onPageChanged: (page) => setState(() => _page = page),
                   itemBuilder: (context, page) => _RecordDayForm(
                       key: ValueKey(MoodRecord.dateKey(_dateFor(page))),
