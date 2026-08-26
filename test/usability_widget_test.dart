@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mood_wave_tracker/data/mood_record_store.dart';
 import 'package:mood_wave_tracker/domain/mood_record.dart';
+import 'package:mood_wave_tracker/l10n/app_strings.dart';
 import 'package:mood_wave_tracker/notifications/reminder_service.dart';
 import 'package:mood_wave_tracker/screens/record_screen.dart';
 import 'package:mood_wave_tracker/settings/app_settings.dart';
@@ -27,6 +28,15 @@ class _MemoryRecordStore implements MoodRecordStore {
 }
 
 void main() {
+  test('記録日付に設定言語の曜日を表示する', () {
+    final date = DateTime(2026, 8, 26);
+
+    expect(const AppStrings(AppLanguage.japanese).recordFor(date),
+        '8/26(水)の記録');
+    expect(const AppStrings(AppLanguage.english).recordFor(date),
+        'Record for 8/26 (Wed)');
+  });
+
   testWidgets('強度をタップすると選択値が変わる', (tester) async {
     var selected = 0;
     await tester.pumpWidget(MaterialApp(

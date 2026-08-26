@@ -10,6 +10,15 @@ class AppStrings {
   String get chart => t('グラフ', 'Chart');
   String get history => t('履歴', 'History');
   String get settings => t('設定', 'Settings');
-  String recordFor(DateTime date) =>
-      t('${date.month}/${date.day}の記録', 'Record for ${date.month}/${date.day}');
+  String recordFor(DateTime date) {
+    const japaneseWeekdays = ['月', '火', '水', '木', '金', '土', '日'];
+    const englishWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final weekday = isJapanese
+        ? japaneseWeekdays[date.weekday - 1]
+        : englishWeekdays[date.weekday - 1];
+    return t(
+      '${date.month}/${date.day}($weekday)の記録',
+      'Record for ${date.month}/${date.day} ($weekday)',
+    );
+  }
 }
