@@ -1,5 +1,7 @@
 enum AppLanguage { japanese, english }
 
+enum AppThemeMode { system, light, dark }
+
 class AppSettings {
   const AppSettings({
     this.averageSleepHours = 7,
@@ -7,6 +9,7 @@ class AppSettings {
     this.notificationsEnabled = false,
     this.notificationHour = 21,
     this.notificationMinute = 0,
+    this.themeMode = AppThemeMode.system,
   });
 
   final double averageSleepHours;
@@ -14,6 +17,7 @@ class AppSettings {
   final bool notificationsEnabled;
   final int notificationHour;
   final int notificationMinute;
+  final AppThemeMode themeMode;
 
   AppSettings copyWith({
     double? averageSleepHours,
@@ -21,6 +25,7 @@ class AppSettings {
     bool? notificationsEnabled,
     int? notificationHour,
     int? notificationMinute,
+    AppThemeMode? themeMode,
   }) =>
       AppSettings(
         averageSleepHours: averageSleepHours ?? this.averageSleepHours,
@@ -28,5 +33,6 @@ class AppSettings {
         notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
         notificationHour: notificationHour ?? this.notificationHour,
         notificationMinute: notificationMinute ?? this.notificationMinute,
+        themeMode: themeMode ?? this.themeMode,
       );
 }

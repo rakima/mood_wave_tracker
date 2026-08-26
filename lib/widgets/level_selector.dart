@@ -32,8 +32,15 @@ class LevelSelector extends StatelessWidget {
             ),
             child: SegmentedButton<int>(
               showSelectedIcon: false,
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith((states) =>
+                    states.contains(WidgetState.selected)
+                        ? Colors.lightBlue.shade100
+                        : Colors.transparent),
+                foregroundColor: WidgetStateProperty.resolveWith((states) =>
+                    states.contains(WidgetState.selected)
+                        ? Colors.blue.shade900
+                        : Theme.of(context).colorScheme.onSurface),
               ),
               segments: [
                 for (var level = 0; level <= 5; level++)
