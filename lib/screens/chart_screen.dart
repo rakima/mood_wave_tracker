@@ -217,10 +217,10 @@ class MoodChartPainter extends CustomPainter {
             ..strokeWidth = value == 0 ? 2.2 : 1);
       _text(canvas, value > 0 ? '+$value' : '$value', Offset(0, y - 7));
     }
-    _series(canvas, points.where((p) => p.maniaValue > 0), (p) => p.maniaValue,
-        maniaColor, left, top, width, height);
-    _series(canvas, points.where((p) => p.depressionValue < 0),
-        (p) => p.depressionValue, depressionColor, left, top, width, height);
+    _series(canvas, points, (p) => p.maniaValue, maniaColor, left, top, width,
+        height);
+    _series(canvas, points, (p) => p.depressionValue, depressionColor, left,
+        top, width, height);
     for (var index = 0; index < 5; index++) {
       final day = ((dayCount - 1) * index / 4).round();
       final date = from.add(Duration(days: day));

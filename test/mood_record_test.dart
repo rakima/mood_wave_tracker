@@ -48,4 +48,14 @@ void main() {
     expect(point.depressionValue, -3);
     expect(point.maniaValue, isNot(1));
   });
+
+  test('グラフ変換は躁と鬱の0をそれぞれ保持する', () {
+    final maniaZero = toChartPoint(record(mania: 0, depression: 3));
+    final depressionZero = toChartPoint(record(mania: 4, depression: 0));
+
+    expect(maniaZero.maniaValue, 0);
+    expect(maniaZero.depressionValue, -3);
+    expect(depressionZero.maniaValue, 4);
+    expect(depressionZero.depressionValue, 0);
+  });
 }
