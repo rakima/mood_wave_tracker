@@ -8,6 +8,7 @@ import 'screens/history_screen.dart';
 import 'screens/record_screen.dart';
 import 'screens/settings_screen.dart';
 import 'settings/settings_controller.dart';
+import 'settings/app_settings.dart';
 
 class MoodWaveApp extends StatelessWidget {
   const MoodWaveApp(
@@ -26,7 +27,11 @@ class MoodWaveApp extends StatelessWidget {
       builder: (context, child) => MaterialApp(
             title: 'Mood Wave Tracker',
             debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.system,
+            themeMode: switch (settings.value.themeMode) {
+              AppThemeMode.light => ThemeMode.light,
+              AppThemeMode.dark => ThemeMode.dark,
+              AppThemeMode.system => ThemeMode.system,
+            },
             theme: _theme(Brightness.light),
             darkTheme: _theme(Brightness.dark),
             home: HomeShell(
