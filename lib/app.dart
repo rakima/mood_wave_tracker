@@ -25,7 +25,7 @@ class MoodWaveApp extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedBuilder(
       animation: settings,
       builder: (context, child) => MaterialApp(
-            title: 'Mood Wave Tracker',
+            title: 'Mood Wave',
             debugShowCheckedModeBanner: false,
             themeMode: switch (settings.value.themeMode) {
               AppThemeMode.light => ThemeMode.light,
