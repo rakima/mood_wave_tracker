@@ -1,8 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
+}
+fun releaseSigningProperty(name: String): String =
+    keystoreProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+        ?: throw GradleException("Missing '$name' in android/key.properties.")
 
 android {
     namespace = "com.rakima.moodwavetracker"
@@ -27,10 +40,37 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                keyAlias = releaseSigningProperty("keyAlias")
+                keyPassword = releaseSigningProperty("keyPassword")
+                storeFile = file(releaseSigningProperty("storeFile"))
+                storePassword = releaseSigningProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val isReleaseBuild = allTasks.any {
+        it.name == "assembleRelease" || it.name == "bundleRelease"
+    }
+    if (isReleaseBuild && !hasReleaseSigning) {
+        throw GradleException(
+            "Release signing is not configured. Copy android/key.properties.example " +
+                "to android/key.properties and set your upload keystore credentials.",
+        )
     }
 }
 
