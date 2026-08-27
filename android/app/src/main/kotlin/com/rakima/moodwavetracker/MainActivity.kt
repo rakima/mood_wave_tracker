@@ -1,4 +1,4 @@
-package com.example.mood_wave_tracker
+package com.rakima.moodwavetracker
 
 import android.content.Intent
 import android.provider.Settings
