@@ -70,6 +70,38 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
+  testWidgets('未保存の入力がある日から移動する前に確認する', (tester) async {
+    final store = _MemoryRecordStore();
+    final settings = SettingsController(_MemorySettings(), const AppSettings());
+    final initialDate = DateTime.now().subtract(const Duration(days: 1));
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: RecordScreen(
+      store: store,
+      initialDate: initialDate,
+      settings: settings,
+      reminders: ReminderService(store),
+      onSaved: () {},
+    ))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('4').first);
+    await tester.tap(
+        find.widgetWithIcon(IconButton, Icons.chevron_left));
+    await tester.pumpAndSettle();
+
+    expect(find.text('未保存の変更があります'), findsOneWidget);
+    await tester.tap(find.text('キャンセル'));
+    await tester.pumpAndSettle();
+    expect(
+        find.text(const AppStrings(AppLanguage.japanese).recordFor(initialDate)),
+        findsOneWidget);
+
+    await tester.drag(find.byType(PageView), const Offset(-160, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('未保存の変更があります'), findsOneWidget);
+  });
+
   test('テーマ設定をcopyWithで保持・変更できる', () {
     const settings = AppSettings();
     expect(settings.themeMode, AppThemeMode.system);

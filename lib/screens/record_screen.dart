@@ -21,14 +21,16 @@ class RecordScreen extends StatefulWidget {
   final ReminderService reminders;
   final VoidCallback onSaved;
   @override
-  State<RecordScreen> createState() => _RecordScreenState();
+  State<RecordScreen> createState() => RecordScreenState();
 }
 
-class _RecordScreenState extends State<RecordScreen> {
+class RecordScreenState extends State<RecordScreen> {
   static const centerPage = 10000;
   late final PageController _pages;
   late final DateTime _centerDate;
   var _page = centerPage;
+  double _horizontalDrag = 0;
+  final Map<int, GlobalKey<_RecordDayFormState>> _formKeys = {};
   @override
   void initState() {
     super.initState();
@@ -41,6 +43,48 @@ class _RecordScreenState extends State<RecordScreen> {
   int get _lastPage =>
       centerPage +
       MoodRecord.dateOnly(DateTime.now()).difference(_centerDate).inDays;
+
+  Future<bool> confirmDiscard() async {
+    final form = _formKeys[_page]?.currentState;
+    if (form == null || !form.isDirty) return true;
+    final s = AppStrings(widget.settings.value.language);
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(s.t('未保存の変更があります', 'Unsaved changes')),
+        content: Text(s.t('保存せずに移動しますか？',
+            'Do you want to leave without saving?')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(s.t('キャンセル', 'Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(s.t('破棄して移動', 'Discard and leave')),
+          ),
+        ],
+      ),
+    );
+    if (discard != true || !mounted) return false;
+    setState(() => _formKeys[_page] = GlobalKey<_RecordDayFormState>());
+    return true;
+  }
+
+  Future<void> showDate(DateTime date) async {
+    final target = centerPage +
+        MoodRecord.dateOnly(date).difference(_centerDate).inDays;
+    if (target < 0 || target > _lastPage || target == _page) return;
+    if (!await confirmDiscard() || !mounted) return;
+    _pages.jumpToPage(target);
+  }
+
+  Future<void> _moveTo(int target) async {
+    if (target < 0 || target > _lastPage || target == _page) return;
+    if (!await confirmDiscard() || !mounted) return;
+    await _pages.animateToPage(target,
+        duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
+  }
   @override
   void dispose() {
     _pages.dispose();
@@ -71,9 +115,7 @@ class _RecordScreenState extends State<RecordScreen> {
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
               child: Row(children: [
                 IconButton(
-                    onPressed: () => _pages.previousPage(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOut),
+                    onPressed: () => _moveTo(_page - 1),
                     icon: const Icon(Icons.chevron_left)),
                 Expanded(
                     child: Text(
@@ -84,23 +126,37 @@ class _RecordScreenState extends State<RecordScreen> {
                 IconButton(
                     onPressed: _page >= _lastPage
                         ? null
-                        : () => _pages.nextPage(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut),
+                        : () => _moveTo(_page + 1),
                     icon: const Icon(Icons.chevron_right)),
               ])),
           Expanded(
-              child: PageView.builder(
-                  controller: _pages,
-                  itemCount: _lastPage + 1,
-                  onPageChanged: (page) => setState(() => _page = page),
-                  itemBuilder: (context, page) => _RecordDayForm(
-                      key: ValueKey(MoodRecord.dateKey(_dateFor(page))),
-                      date: _dateFor(page),
-                      store: widget.store,
-                      settings: widget.settings,
-                      reminders: widget.reminders,
-                      onSaved: widget.onSaved))),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onHorizontalDragStart: (_) => _horizontalDrag = 0,
+                onHorizontalDragUpdate: (details) =>
+                    _horizontalDrag += details.primaryDelta ?? 0,
+                onHorizontalDragEnd: (details) {
+                  final velocity = details.primaryVelocity ?? 0;
+                  if (_horizontalDrag < -48 || velocity < -200) {
+                    _moveTo(_page + 1);
+                  } else if (_horizontalDrag > 48 || velocity > 200) {
+                    _moveTo(_page - 1);
+                  }
+                },
+                child: PageView.builder(
+                    controller: _pages,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _lastPage + 1,
+                    onPageChanged: (page) => setState(() => _page = page),
+                    itemBuilder: (context, page) => _RecordDayForm(
+                        key: _formKeys.putIfAbsent(
+                            page, () => GlobalKey<_RecordDayFormState>()),
+                        date: _dateFor(page),
+                        store: widget.store,
+                        settings: widget.settings,
+                        reminders: widget.reminders,
+                        onSaved: widget.onSaved)),
+              )),
         ]),
       ]);
 }
@@ -127,6 +183,10 @@ class _RecordDayFormState extends State<_RecordDayForm> {
   int _mania = 0, _depression = 0;
   double _sleep = 7;
   bool _medication = false, _loading = true, _saving = false, _existing = false;
+  int _savedMania = 0, _savedDepression = 0;
+  double _savedSleep = 7;
+  bool _savedMedication = false;
+  String _savedMemo = '';
   static final _sleepOptions = [for (var i = 0; i <= 48; i++) i / 2];
   @override
   void initState() {
@@ -144,6 +204,7 @@ class _RecordDayFormState extends State<_RecordDayForm> {
       _sleep = record?.sleepHours ?? widget.settings.value.averageSleepHours;
       _medication = record?.tookMedication ?? false;
       _memo.text = record?.memo ?? '';
+      _markSaved();
       _loading = false;
     });
   }
@@ -161,6 +222,7 @@ class _RecordDayFormState extends State<_RecordDayForm> {
     setState(() {
       _saving = false;
       _existing = true;
+      _markSaved();
     });
     await widget.reminders.update(widget.settings.value);
     widget.onSaved();
@@ -169,6 +231,22 @@ class _RecordDayFormState extends State<_RecordDayForm> {
           content: Text(AppStrings(widget.settings.value.language)
               .t('記録を保存しました', 'Record saved'))));
     }
+  }
+
+  bool get isDirty =>
+      !_loading &&
+      (_mania != _savedMania ||
+          _depression != _savedDepression ||
+          _sleep != _savedSleep ||
+          _medication != _savedMedication ||
+          _memo.text != _savedMemo);
+
+  void _markSaved() {
+    _savedMania = _mania;
+    _savedDepression = _depression;
+    _savedSleep = _sleep;
+    _savedMedication = _medication;
+    _savedMemo = _memo.text;
   }
 
   @override
