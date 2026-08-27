@@ -72,23 +72,34 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
   int _revision = 0;
-  DateTime _editingDate = DateTime.now();
+  final _recordKey = GlobalKey<RecordScreenState>();
 
   void _saved() => setState(() => _revision++);
 
-  void _edit(DateTime date) => setState(() {
-        _editingDate = date;
-        _index = 0;
-      });
+  void _edit(DateTime date) {
+    _recordKey.currentState?.showDate(date);
+    setState(() => _index = 0);
+  }
+
+  Future<void> _selectDestination(int index) async {
+    if (index == _index) return;
+    if (_index == 0 &&
+        !(await (_recordKey.currentState?.confirmDiscard() ??
+            Future.value(true)))) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _index = index);
+  }
 
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings(widget.settings.value.language);
     final screens = [
       RecordScreen(
-        key: ValueKey('record-${_editingDate.toIso8601String()}'),
+        key: _recordKey,
         store: widget.store,
-        initialDate: _editingDate,
+        initialDate: DateTime.now(),
         settings: widget.settings,
         reminders: widget.reminders,
         onSaved: _saved,
@@ -110,10 +121,7 @@ class _HomeShellState extends State<HomeShell> {
       body: SafeArea(child: IndexedStack(index: _index, children: screens)),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (index) => setState(() {
-          _index = index;
-          if (index == 0) _editingDate = DateTime.now();
-        }),
+        onDestinationSelected: _selectDestination,
         destinations: [
           NavigationDestination(
               icon: const Icon(Icons.edit_note), label: strings.record),
