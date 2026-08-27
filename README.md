@@ -48,6 +48,16 @@ flutter test
 flutter build apk --debug
 ```
 
+## Google Play公開
+
+Androidの正式Application IDは`com.rakima.moodwavetracker`、端末上の表示名は「Mood Wave」です。releaseビルドは専用のアップロード鍵が設定されている場合だけ生成でき、debug鍵は使用しません。
+
+- [Google Playリリース手順](docs/play-store-release.md)
+- [Data safety調査](docs/play-store-data-safety.md)
+- [プライバシーポリシー原稿](docs/privacy-policy.md)
+
+公開前には、プライバシーポリシー原稿を公開URLへ掲載し、Play ConsoleのData safetyおよびHealth apps declarationを完了してください。
+
 ## MVP の範囲
 
 アカウント、アプリ独自のクラウド同期、診断・医療アドバイス、エクスポート、詳細統計、ウェアラブル連携は含みません。Android Auto Backupは端末のバックアップ設定が有効な場合にOSが実行し、アプリ自身が外部APIへ送信する機能ではありません。通知は端末内で今後365日分を予約し、記録保存または設定変更時に未記録日のみ再構成します。
