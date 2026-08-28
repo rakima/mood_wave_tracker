@@ -55,6 +55,7 @@ Androidの正式Application IDは`com.rakima.moodwavetracker`、端末上の表�
 - [Google Playリリース手順](docs/play-store-release.md)
 - [Data safety調査](docs/play-store-data-safety.md)
 - [プライバシーポリシー原稿](docs/privacy-policy.md)
+- [公開プライバシーポリシー](https://rakima.github.io/mood_wave_tracker/)
 
 公開前には、プライバシーポリシー原稿を公開URLへ掲載し、Play ConsoleのData safetyおよびHealth apps declarationを完了してください。
 
