@@ -8,6 +8,7 @@
 - minSdk: 24
 - targetSdk / compileSdk: 36
 - 提出形式: Android App Bundle (`.aab`)
+- Play Storeアイコン: `image/play-store-icon.png`（512×512、32-bit PNG）
 
 Application IDはPlay Consoleでアプリを作成した後に変更できません。登録前に最終確認してください。
 
