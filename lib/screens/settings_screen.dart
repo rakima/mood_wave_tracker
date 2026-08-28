@@ -45,6 +45,31 @@ class _SettingsScreenState extends State<SettingsScreen>
     await widget.reminders.update(next);
   }
 
+  Future<void> _showPrivacyPolicy(AppStrings s) => showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(s.t('プライバシーポリシー', 'Privacy policy')),
+          content: SingleChildScrollView(
+            child: SelectableText(s.t(
+              'Mood Waveは、入力した躁・鬱の強さ、睡眠時間、服薬状況、メモを端末内のSQLiteに保存します。設定内容は端末内のアプリ設定に保存します。\n\n'
+              '本アプリは、開発者のサーバーへの送信、広告、アクセス解析、クラッシュ収集を行いません。Androidのバックアップ設定が有効な場合、記録と設定はAndroid Auto Backupにより暗号化され、Googleアカウントのバックアップ領域へ保存されることがあります。バックアップと復元はAndroid OSが管理します。\n\n'
+              '通知を有効にした場合、未記録時のリマインダーを端末内で予約します。通知以外の機密性の高いAndroid権限は使用しません。\n\n'
+              '本アプリは日々の状態を記録・可視化するためのツールです。医療機器ではなく、いかなる疾患の診断、治療、治癒、予防も行いません。医療上の助言、診断、治療については医療専門家へ相談してください。',
+              'Mood Wave stores the mania and depression intensity, sleep duration, medication status, and notes you enter in SQLite on your device. App preferences are stored locally on your device.\n\n'
+              'The app does not send data to a developer server and contains no advertising, analytics, or crash-reporting service. If Android backup is enabled, records and settings may be encrypted and stored in your Google Account backup by Android Auto Backup. Backup and restoration are managed by Android OS.\n\n'
+              'If reminders are enabled, the app schedules unrecorded-day reminders locally. It does not use sensitive Android permissions other than notifications.\n\n'
+              'This app is a tool for recording and visualizing daily conditions. It is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Consult a healthcare professional for medical advice, diagnosis, or treatment.',
+            )),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(s.t('閉じる', 'Close')),
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final value = widget.controller.value;
@@ -153,6 +178,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                       },
                       child: Text(
                           '${value.notificationHour.toString().padLeft(2, '0')}:${value.notificationMinute.toString().padLeft(2, '0')}'))),
+            const Divider(),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: Text(s.t('プライバシーポリシー', 'Privacy policy')),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _showPrivacyPolicy(s),
+            ),
           ])),
     ]);
   }
