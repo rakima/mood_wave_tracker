@@ -68,7 +68,8 @@ flutter build appbundle --release
 - [ ] `com.rakima.moodwavetracker`でアプリを作成
 - [ ] Play App Signingを有効化
 - [ ] ストア掲載情報、スクリーンショット、アイコン、フィーチャーグラフィックを登録
-- [ ] 公開プライバシーポリシーURLを登録
+- [ ] 公開プライバシーポリシーURL `https://rakima.github.io/mood_wave_tracker/` をPlay Consoleへ登録
+- [ ] PR #7のマージ後、GitHub Pagesの配信元を`main /docs`へ変更
 - [ ] Data safetyフォームを提出
 - [ ] Health apps declarationを提出
 - [ ] コンテンツレーティング、対象年齢、広告の有無を回答
